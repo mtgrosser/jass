@@ -2,7 +2,10 @@ module Jass
   class Compiler < Schmooze::Base
     dependencies buble: 'buble',
                  NodentCompiler: 'nodent-compiler',
-                 rollup: 'rollup'
+                 rollup: 'rollup',
+                 nodeResolve: 'rollup-plugin-node-resolve',
+                 commonjs: 'rollup-plugin-commonjs',
+                 vue2: 'rollup-plugin-vue2'
 
     method :init, <<~JS
       function () {
@@ -36,16 +39,30 @@ module Jass
     JS
 
     # Build bundle with imports: buble(rollup(nodent(src)))
-    method :bundle, <<~JS
-      function(entry, options) {
+    method :js_bundle, <<~JS
+      function(entry, moduleDirectories, options) {
         options = options || {};
-        Object.assign(options, { input: entry, treeshake: false });
+        // TODO: throw error unless moduleDirectories
+        Object.assign(options,
+          { input: entry,
+            treeshake: false,
+            plugins: [
+              vue2({ include: /\.vue$/ }), 
+              nodeResolve({ customResolveOptions: { moduleDirectory: moduleDirectories }}),
+              commonjs()
+            ]
+          }
+        );
         var promise = rollup.rollup(options)
-            .then(bundle => bundle.generate({ format: 'es', sourcemap: true }))
+            .then(bundle => bundle.generate({ format: 'iife', sourcemap: true }))
             .then(bundle => { return { code: send('compile', bundle.code), map: bundle.map }; });
         return promise;
       }
     JS
+    
+    def bundle(entry, options = {})
+      js_bundle(entry, self.class.node_paths, options)
+    end
     
     # Get vendor library versions
     method :versions, <<~JS
@@ -66,11 +83,20 @@ module Jass
       end
       
       def_delegators :instance, :buble, :nodent, :compile, :bundle, :versions
+      
+      def node_paths
+        [Jass.modules_root, Jass.vendor_modules_root].compact.map { |p| File.absolute_path(File.join(p, 'node_modules')) }
+      end
+      
+      def node_path
+        node_paths.join(':')
+      end
     end
     
     def initialize
       super(Jass.modules_root)
       init
     end
+    
   end
 end
