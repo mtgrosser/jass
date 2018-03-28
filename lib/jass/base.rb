@@ -147,7 +147,6 @@ module Jass
       @_schmooze_stdin.puts JSON.dump([method, args])
       input = @_schmooze_stdout.gets
       raise Errno::EPIPE, "Can't read from stdout" if input.nil?
-      STDERR.puts input
       status, result = JSON.parse(input)
       return result if status == 'ok'
       raise Jass::JavaScriptError.new(result)

@@ -8,7 +8,6 @@ module Jass
     def initialize(attributes = {})
       @attributes = attributes || {}
       if stack = attributes['stack']
-        puts stack
         set_backtrace stack.split("\n")
       end
     end
