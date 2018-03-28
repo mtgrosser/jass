@@ -1,5 +1,5 @@
 module Jass
-  class Compiler < Schmooze::Base
+  class Compiler < Base
     dependencies buble: 'buble',
                  NodentCompiler: 'nodent-compiler',
                  rollup: 'rollup',

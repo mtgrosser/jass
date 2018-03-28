@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   
   s.required_ruby_version = '>= 2.3.0'
   
-  s.add_dependency 'schmooze'
+#  s.add_dependency 'schmooze'
   s.add_dependency 'railties', '~> 5.1.5'
   s.add_dependency 'sprockets', '>= 3.0.0'
   
