@@ -21,14 +21,23 @@ module Jass
     method :nodent, <<~JS
       function(src, filename) {
         return global.nodent_compiler.compile(src, filename,
-          { sourcemap: false,
+          { es6target: true,
+            sourcemap: false,
+            parser: {
+              sourceType: 'script',
+              ecmaVersion: 9
+            },
             promises: true,
             noRuntime: true }).code;
       }
     JS
 
     method :buble, <<~JS
-      function(src) { return buble.transform(src).code; }
+      function(src) {
+        return buble.transform(src,
+          { transforms: { dangerousForOf: true },
+            objectAssign: 'Object.assign' }).code;
+      }
     JS
     
     # Compile ES6 without imports: buble(nodent(src))
