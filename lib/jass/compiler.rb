@@ -6,6 +6,7 @@ module Jass
                  nodeResolve: 'rollup-plugin-node-resolve',
                  commonjs: 'rollup-plugin-commonjs',
                  vue2: 'rollup-plugin-vue2'
+                 
 
     method :init, <<~JS
       function () {
@@ -49,28 +50,35 @@ module Jass
 
     # Build bundle with imports: buble(rollup(nodent(src)))
     method :js_bundle, <<~JS
-      function(entry, moduleDirectories, options) {
-        options = options || {};
+      function(entry, moduleDirectories, inputOptions, outputOptions) {
+        inputOptions = inputOptions || {};
+        outputOptions = outputOptions || {}
         // TODO: throw error unless moduleDirectories
-        Object.assign(options,
+        Object.assign(inputOptions,
           { input: entry,
             treeshake: false,
             plugins: [
-              vue2({ include: /\.vue$/ }), 
+              vue2({ include: /\.vue$/ }),
               nodeResolve({ customResolveOptions: { moduleDirectory: moduleDirectories }}),
               commonjs()
             ]
           }
         );
-        var promise = rollup.rollup(options)
-            .then(bundle => bundle.generate({ format: 'iife', sourcemap: true }))
+        Object.assign(outputOptions,
+          { format: 'iife',
+            sourcemap: true,
+            exports: 'none'
+          }
+        );
+        var promise = rollup.rollup(inputOptions)
+            .then(bundle => bundle.generate(outputOptions))
             .then(bundle => { return { code: send('compile', bundle.code), map: bundle.map }; });
         return promise;
       }
     JS
     
-    def bundle(entry, options = {})
-      js_bundle(entry, self.class.node_paths, options)
+    def bundle(entry, input_options = {}, output_options = {})
+      js_bundle(entry, self.class.node_paths, input_options, output_options)
     end
     
     # Get vendor library versions

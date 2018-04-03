@@ -18,16 +18,11 @@ require 'jass/version'
 require 'jass/errors'
 require 'jass/base'
 require 'jass/compiler'
-require 'jass/external_directive_processor'
+require 'jass/global_directive_processor'
 require 'jass/es6_processor'
 require 'jass/bundle_processor'
 
 require 'jass/railtie' if defined?(Rails)
-
-#require 'jass/vue_script'
-#require 'jass/vue_template'
-#require 'jass/vue_style'
-
 
 if Sprockets.respond_to?(:register_transformer)
   Sprockets.register_mime_type 'text/ecmascript-6', extensions: %w[.jass], charset: :unicode
@@ -44,4 +39,4 @@ if Sprockets.respond_to?(:register_engine)
   Sprockets.register_engine(*args)
 end
 
-Sprockets.register_preprocessor 'text/ecmascript-6', Jass::ExternalDirectiveProcessor
+Sprockets.register_preprocessor 'text/ecmascript-6', Jass::GlobalDirectiveProcessor

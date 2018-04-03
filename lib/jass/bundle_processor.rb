@@ -14,10 +14,9 @@ module Jass
     def call(input)
       env, filename = input.fetch(:environment), input.fetch(:filename)
       dependencies = Set.new(input.fetch(:metadata).fetch(:dependencies))
-      externals = Set.new(input.fetch(:metadata).fetch(:externals, []))
+      globals = input.fetch(:metadata).fetch(:globals, {})
       bundle_root = Pathname.new(filename).dirname
-      
-      bundle = Compiler.bundle(filename, external: externals.to_a)
+      bundle = Compiler.bundle(filename, {}, globals: globals)
       dependencies += bundle.fetch('map').fetch('sources').map { |dep| Sprockets::URIUtils.build_file_digest_uri(bundle_root.join(dep).to_s) }
       
       { data: bundle.fetch('code'),
