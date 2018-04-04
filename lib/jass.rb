@@ -1,21 +1,34 @@
 require 'set'
-require 'forwardable'
 require 'pathname'
+require 'open3'
 
 require 'sprockets'
+require 'active_support/all'
 
 module Jass
   class << self
-    attr_accessor :vendor_modules_root
+    attr_accessor :vendor_modules_root, :plugins
     
     def modules_root
       File.join(File.dirname(__FILE__), '..', 'vendor')
+    end
+    
+    def prepend_plugin(package, name, arguments = nil, root = nil)
+      Compiler.prepend_plugin(package, name, arguments, root)
+      @compiler = nil
+    end
+    
+    def compiler
+      @compiler ||= Jass::Compiler.new
     end
   end
 end
 
 require 'jass/version'
 require 'jass/errors'
+require 'jass/dependency'
+require 'jass/function'
+require 'jass/plugin'
 require 'jass/base'
 require 'jass/compiler'
 require 'jass/global_directive_processor'

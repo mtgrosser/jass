@@ -1,6 +1,8 @@
 # Jass
 
-Roll ES6 and VueJS single file components with the Rails asset pipeline - no Webpack required!
+Roll ES6 with the Rails asset pipeline - no Webpack required!
+
+Jass integrates Rollup.js, Bublé and Nodent with the Rails asset pipeline.
 
 ## Installation
 
@@ -31,12 +33,12 @@ Use `yarn` to install your custom npm dependencies into `vendor/node_modules`.
 Create your bundle entry points as `.jass` files under `app/assets/javascripts` in regular
 ES6 syntax (`import`, `async/await`).
 
-External dependencies can be declared to Sprockets using the `external` comment:
+External dependencies can be declared to Sprockets using the `global` comment:
 
 ```js
 // application.jass
-//= external vue
-//= external vue-router
+//= global vue Vue
+//= global vue-router VueRouter
 
 import Vue from 'vue'
 import Foo from 'custom-dependency'

@@ -1,6 +1,5 @@
 module Jass
   class Error < StandardError; end
-  class DependencyError < Error; end
   
   class JavaScriptError < Error
     attr_reader :attributes
@@ -25,4 +24,6 @@ module Jass
       end
     end
   end
+  
+  class DependencyError < JavaScriptError; end
 end

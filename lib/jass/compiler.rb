@@ -1,14 +1,12 @@
 module Jass
   class Compiler < Base
-    dependencies buble: 'buble',
-                 NodentCompiler: 'nodent-compiler',
-                 rollup: 'rollup',
-                 nodeResolve: 'rollup-plugin-node-resolve',
-                 commonjs: 'rollup-plugin-commonjs',
-                 vue2: 'rollup-plugin-vue2'
-                 
+    dependency buble: 'buble',
+               NodentCompiler: 'nodent-compiler',
+               rollup: 'rollup',
+               nodeResolve: 'rollup-plugin-node-resolve',
+               commonjs: 'rollup-plugin-commonjs'
 
-    method :init, <<~JS
+    function :init, <<~JS
       function () {
         global.nodent_compiler = new NodentCompiler;
         global.send = function() {
@@ -19,7 +17,7 @@ module Jass
       }
     JS
     
-    method :nodent, <<~JS
+    function :nodent, <<~JS
       function(src, filename) {
         return global.nodent_compiler.compile(src, filename,
           { es6target: true,
@@ -33,7 +31,7 @@ module Jass
       }
     JS
 
-    method :buble, <<~JS
+    function :buble, <<~JS
       function(src) {
         return buble.transform(src,
           { transforms: { dangerousForOf: true },
@@ -42,14 +40,14 @@ module Jass
     JS
     
     # Compile ES6 without imports: buble(nodent(src))
-    method :compile, <<~JS
+    function :compile, <<~JS
       function(src, filename) {
         return send('buble', send('nodent', src, filename));
       }
     JS
 
     # Build bundle with imports: buble(rollup(nodent(src)))
-    method :js_bundle, <<~JS
+    function :js_bundle, <<~JS
       function(entry, moduleDirectories, inputOptions, outputOptions) {
         inputOptions = inputOptions || {};
         outputOptions = outputOptions || {}
@@ -58,7 +56,7 @@ module Jass
           { input: entry,
             treeshake: false,
             plugins: [
-              vue2({ include: /\.vue$/ }),
+              ...__plugins__,
               nodeResolve({ customResolveOptions: { moduleDirectory: moduleDirectories }}),
               commonjs()
             ]
@@ -82,7 +80,7 @@ module Jass
     end
     
     # Get vendor library versions
-    method :versions, <<~JS
+    function :versions, <<~JS
       function() {
         return {  buble: buble.VERSION,
                   rollup: rollup.VERSION,
@@ -91,18 +89,13 @@ module Jass
     JS
 
     class << self
-      extend Forwardable
-
-      private :new
-      
-      def instance
-        @instance ||= new
+      def prepend_plugin(package, name, arguments = nil, root = nil)
+        plugins.unshift(Plugin.new(name, arguments, root))
+        dependency name => package
       end
       
-      def_delegators :instance, :buble, :nodent, :compile, :bundle, :versions
-      
       def node_paths
-        [Jass.modules_root, Jass.vendor_modules_root].compact.map { |p| File.absolute_path(File.join(p, 'node_modules')) }
+        ([Jass.modules_root, Jass.vendor_modules_root] + plugins.map(&:root)).compact.map { |p| File.absolute_path(File.join(p, 'node_modules')) }
       end
       
       def node_path
@@ -111,7 +104,7 @@ module Jass
     end
     
     def initialize
-      super(Jass.modules_root)
+      super(Jass.modules_root, 'NODE_PATH' => self.class.node_path)
       init
     end
     
