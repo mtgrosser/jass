@@ -33,7 +33,7 @@ Use `yarn` to install your custom npm dependencies into `vendor/node_modules`.
 Create your bundle entry points as `.jass` files under `app/assets/javascripts` in regular
 ES6 syntax (`import`, `async/await`).
 
-External dependencies can be declared to Sprockets using the `global` comment:
+External dependencies can be declared to Rollup using the `global` comment:
 
 ```js
 // application.jass
