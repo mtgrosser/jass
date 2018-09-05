@@ -18,6 +18,11 @@ module Jass
       @compiler = nil
     end
     
+    def append_plugin(package, name, arguments = nil, root = nil)
+      Compiler.append_plugin(package, name, arguments, root)
+      @compiler = nil
+    end
+    
     def compiler
       @compiler ||= Jass::Compiler.new
     end

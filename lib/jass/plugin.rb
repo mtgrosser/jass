@@ -7,7 +7,8 @@ module Jass
     end
     
     def to_js
-      "__plugins__.push(#{name}(#{arguments}));\n"
+      args = arguments.respond_to?(:call) ? arguments.call : arguments
+      "__plugins__.push(#{name}(#{args}));\n"
     end
   end
 end

@@ -94,6 +94,11 @@ module Jass
         dependency name => package
       end
       
+      def append_plugin(package, name, arguments = nil, root = nil)
+        plugins.push(Plugin.new(name, arguments, root))
+        dependency name => package
+      end
+      
       def node_paths
         ([Jass.modules_root, Jass.vendor_modules_root] + plugins.map(&:root)).compact.map { |p| File.absolute_path(File.join(p, 'node_modules')) }
       end
