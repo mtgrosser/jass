@@ -50,32 +50,31 @@ module Jass
     function :js_bundle, <<~JS
       function(entry, moduleDirectories, inputOptions, outputOptions) {
         inputOptions = inputOptions || {};
-        outputOptions = outputOptions || {}
+        outputOptions = outputOptions || {};
+        var inputDefaultOptions = {
+          input: entry,
+          treeshake: false,
+          plugins: [
+            ...__plugins__,
+            nodeResolve({ customResolveOptions: { moduleDirectory: moduleDirectories }}),
+            commonjs()
+          ]
+        };
         // TODO: throw error unless moduleDirectories
-        Object.assign(inputOptions,
-          { input: entry,
-            treeshake: false,
-            plugins: [
-              ...__plugins__,
-              nodeResolve({ customResolveOptions: { moduleDirectory: moduleDirectories }}),
-              commonjs()
-            ]
-          }
-        );
         Object.assign(outputOptions,
           { format: 'iife',
             sourcemap: true,
             exports: 'none'
           }
         );
-        var promise = rollup.rollup(inputOptions)
+        var promise = rollup.rollup({ ...inputDefaultOptions, ...inputOptions })
             .then(bundle => bundle.generate(outputOptions))
             .then(bundle => { return { code: send('compile', bundle.code), map: bundle.map }; });
         return promise;
       }
     JS
     
-    def bundle(entry, input_options = {}, output_options = {})
+    def bundle(entry, input_options = Jass.input_options, output_options = {})
       js_bundle(entry, self.class.node_paths, input_options, output_options)
     end
     

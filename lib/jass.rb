@@ -7,7 +7,7 @@ require 'active_support/all'
 
 module Jass
   class << self
-    attr_accessor :vendor_modules_root, :plugins
+    attr_accessor :vendor_modules_root, :plugins, :input_options
     
     def modules_root
       File.join(File.dirname(__FILE__), '..', 'vendor')
@@ -21,6 +21,10 @@ module Jass
     def append_plugin(package, name, arguments = nil, root = nil)
       Compiler.append_plugin(package, name, arguments, root)
       @compiler = nil
+    end
+    
+    def input_options
+      @input_options || {}
     end
     
     def compiler
